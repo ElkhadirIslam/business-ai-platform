@@ -1,0 +1,48 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+      - dev
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build_and_test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Install dependencies
+        run: npm install
+        working-directory: frontend  # Si ton Next.js est dans un dossier "frontend"
+
+      - name: Run tests
+        run: npm test
+        working-directory: frontend
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Restore .NET dependencies
+        run: dotnet restore
+        working-directory: backend  # Si ton backend est dans un dossier "backend"
+
+      - name: Build .NET application
+        run: dotnet build --configuration Release --no-restore
+        working-directory: backend
+
+      - name: Run .NET tests
+        run: dotnet test --no-restore --verbosity normal
+        working-directory: backend
